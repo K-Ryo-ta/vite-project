@@ -1,35 +1,110 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+
+type taskType = {
+  title: string;
+  finished: boolean;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [taskTitle, setTaskName] = useState("");
+  const [taskList, setTaskList] = useState<taskType[]>([]);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState<string>("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTaskName(e.target.value);
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+    if (taskTitle.trim() === "") return;
+    const title = taskTitle;
+    const newTask: taskType = {
+      title: title,
+      finished: false,
+    };
+    setTaskList([...taskList, newTask]);
+  };
+
+  const handleDelete = (index: number) => {
+    const newList = [...taskList];
+    newList.splice(index, 1);
+    setTaskList(newList);
+  };
+
+  const handleToggleFinished = (index: number) => {
+    const newList = [...taskList];
+    newList[index].finished = !newList[index].finished;
+    setTaskList(newList);
+  };
+
+  const handleEdit = (index: number) => {
+    setEditIndex(index);
+    setEditTitle(taskList[index].title);
+  };
+
+  const handleUpdate = (index: number) => {
+    const updatedList = [...taskList];
+    updatedList[index].title = editTitle;
+    setTaskList(updatedList);
+    setEditIndex(null);
+    setEditTitle("");
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>TaskList</h1>
+      {taskList.map((task, index) => (
+        <div key={index}>
+          {editIndex === index ? (
+            <>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+              />
+              <button type="button" onClick={() => handleUpdate(index)}>
+                保存
+              </button>
+            </>
+          ) : (
+            <>
+              <span
+                style={{
+                  textDecoration: task.finished ? "line-through" : "none",
+                }}
+              >
+                {task.title}
+              </span>
+              <input
+                type="checkbox"
+                checked={task.finished}
+                onChange={() => handleToggleFinished(index)}
+              />
+              {task.finished && (
+                <button type="button" onClick={() => handleDelete(index)}>
+                  削除
+                </button>
+              )}
+              <button type="button" onClick={() => handleEdit(index)}>
+                編集
+              </button>
+            </>
+          )}
+        </div>
+      ))}
+
+      <form action="">
+        <input
+          type="text"
+          value={taskTitle}
+          onChange={(e) => handleChange(e)}
+        />
+        <button onClick={(e) => handleClick(e)}>追加</button>
+      </form>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
